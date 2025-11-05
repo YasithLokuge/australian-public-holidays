@@ -1,0 +1,20 @@
+# robots.txt for https://yasithlokuge.github.io/australian-public-holidays
+
+User-agent: *
+Allow: /$
+Allow: /*?jurisdiction=*
+Allow: /*?jurisdiction=*&year=*
+Disallow: /*?
+Disallow: /*&
+
+# Prevent crawling of non-relevant files or directories
+Disallow: /assets/
+Disallow: /scripts/
+Disallow: /styles/
+Disallow: /favicon_io/
+Disallow: /LICENSE.md
+Disallow: /README.md
+Disallow: /Screenshot.png
+
+# Sitemap reference
+Sitemap: https://yasithlokuge.github.io/australian-public-holidays/sitemap.xml

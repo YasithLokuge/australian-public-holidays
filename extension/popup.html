@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Australian Public Holidays</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Australian Public Holidays</h1>
+
+    <div class="controls">
+      <label>Year
+        <select id="yearSelect"><option value="">All</option></select>
+      </label>
+
+      <label>Jurisdiction
+        <select id="jurisdictionSelect"><option value="">All</option></select>
+      </label>
+
+      <button id="refreshBtn" title="Refresh data">Refresh</button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="holidaysTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Holiday Name</th>
+            <th>Information</th>
+            <th>More Info</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" class="center">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <script src="popup.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Australian Public Holidays",
+  "version": "1.0",
+  "description": "View and filter Australian public holidays from data.gov.au",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Australian Public Holidays"
+  },
+  "host_permissions": [
+    "https://data.gov.au/*"
+  ],
+  "permissions": []
+}

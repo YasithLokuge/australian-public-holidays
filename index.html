@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Australian Public Holidays Viewer</title>
+  <meta name="description" content="View and explore Australian public holidays by year and jurisdiction." />
+  <meta name="keywords" content="Australian holidays, public holidays, Australia, ACT, NSW, VIC, QLD, WA, SA, TAS, NT, holidays" />
+  <meta name="author" content="Yasith Lokuge" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Canonical link (will update dynamically) -->
+  <link id="canonicalLink" rel="canonical" href="https://yasithlokuge.github.io/australian-public-holidays" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Australian Public Holidays Viewer" />
+  <meta property="og:description" content="Explore Australian public holidays by year and jurisdiction" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://yasithlokuge.github.io/australian-public-holidays" />
+  <meta property="og:image" content="https://yasithlokuge.github.io/australian-public-holidays/Screenshot.png" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Australian Public Holidays Viewer" />
+  <meta name="twitter:description" content="Easily view official Australian public holidays. Filter by year and jurisdiction." />
+  <meta name="twitter:image" content="https://yasithlokuge.github.io/australian-public-holidays/Screenshot.png" />
+
+  <!-- Favicons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+  <link rel="icon" href="favicon/favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="192x192" href="favicon/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon/android-chrome-512x512.png">
+  <meta name="theme-color" content="#006699">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f6fa;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #006699;
+    }
+    select {
+      margin: 5px;
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #006699;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    a {
+      color: #006699;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Australian Public Holidays</h1>
+  <div style="text-align:center;">
+    <label for="yearSelect">Year:</label>
+    <select id="yearSelect">
+      <option value="">All</option>
+    </select>
+
+    <label for="jurisdictionSelect">Jurisdiction:</label>
+    <select id="jurisdictionSelect">
+      <option value="">All</option>
+    </select>
+  </div>
+
+  <table id="holidayTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Holiday Name</th>
+        <th>Information</th>
+        <th>More Info</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- JSON-LD structured data -->
+  <script id="structuredData" type="application/ld+json"></script>
+
+  <script>
+    const API_URL = "https://data.gov.au/data/api/action/datastore_search?resource_id=33673aca-0857-42e5-b8f0-9981b4755686&limit=10000";
+
+    async function fetchData() {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        return data.result.records;
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        return [];
+      }
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return "N/A";
+      const year = dateString.substring(0, 4);
+      const month = dateString.substring(4, 6);
+      const day = dateString.substring(6, 8);
+      const dateObj = new Date(`${year}-${month}-${day}`);
+      return isNaN(dateObj)
+        ? "N/A"
+        : dateObj.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" });
+    }
+
+    function getParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        year: params.get("year") || "",
+        jurisdiction: params.get("jurisdiction")?.toLowerCase() || ""
+      };
+    }
+
+    function setParams(year, jurisdiction) {
+      const params = new URLSearchParams();
+      if (year) params.set("year", year);
+      if (jurisdiction) params.set("jurisdiction", jurisdiction.toLowerCase());
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      history.replaceState({}, "", newUrl);
+    }
+
+    function populateFilters(records) {
+      const years = [...new Set(records.map(r => r.Date?.substring(0, 4)).filter(Boolean))].sort();
+      const jurisdictions = [...new Set(records.map(r => r.Jurisdiction).filter(Boolean))].sort();
+
+      const yearSelect = document.getElementById("yearSelect");
+      const jurisdictionSelect = document.getElementById("jurisdictionSelect");
+
+      years.forEach(year => {
+        const option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+      });
+
+      jurisdictions.forEach(j => {
+        const option = document.createElement("option");
+        option.value = j;
+        option.textContent = j.toUpperCase();
+        jurisdictionSelect.appendChild(option);
+      });
+
+      const params = getParams();
+      if (params.year) yearSelect.value = params.year;
+      if (params.jurisdiction) jurisdictionSelect.value = params.jurisdiction;
+
+      yearSelect.addEventListener("change", () => {
+        setParams(yearSelect.value, jurisdictionSelect.value);
+        renderTable(records);
+      });
+
+      jurisdictionSelect.addEventListener("change", () => {
+        setParams(yearSelect.value, jurisdictionSelect.value);
+        renderTable(records);
+      });
+    }
+
+    function renderTable(records) {
+      const tbody = document.querySelector("#holidayTable tbody");
+      tbody.innerHTML = "";
+
+      const { year, jurisdiction } = getParams();
+
+      const filtered = records.filter(r =>
+        (!year || r.Date?.startsWith(year)) &&
+        (!jurisdiction || r.Jurisdiction === jurisdiction)
+      );
+
+      filtered.forEach(record => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${formatDate(record.Date)}</td>
+          <td>${record["Holiday Name"] || "N/A"}</td>
+          <td>${record.Information || "N/A"}</td>
+          <td><a href="${record["More Information"] || "#"}" target="_blank">Link</a></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateMetaSEO(year, jurisdiction);
+      generateStructuredData(filtered);
+    }
+
+    function updateMetaSEO(year, jurisdiction) {
+      const titleBase = "Australian Public Holidays Viewer";
+      const descBase = "View and explore Australian public holidays by year and jurisdiction. Data from data.gov.au.";
+      let title = titleBase;
+      let desc = descBase;
+
+      if (jurisdiction && year) {
+        title = `${jurisdiction.toUpperCase()} Public Holidays ${year} | Australian Holidays Viewer`;
+        desc = `See official ${jurisdiction.toUpperCase()} public holidays for ${year}. Filter holidays by year and jurisdiction.`;
+      }
+
+      document.title = title;
+      document.querySelector('meta[name="description"]').setAttribute("content", desc);
+      document.querySelector('meta[property="og:title"]').setAttribute("content", title);
+      document.querySelector('meta[property="og:description"]').setAttribute("content", desc);
+      document.querySelector('meta[name="twitter:title"]').setAttribute("content", title);
+      document.querySelector('meta[name="twitter:description"]').setAttribute("content", desc);
+
+      const canonical = `https://yasithlokuge.github.io/australian-public-holidays?jurisdiction=${jurisdiction}&year=${year}`;
+      document.getElementById("canonicalLink").setAttribute("href", canonical);
+    }
+
+    function generateStructuredData(records) {
+      const events = records.map(r => {
+        const year = r.Date?.substring(0, 4);
+        const month = r.Date?.substring(4, 6);
+        const day = r.Date?.substring(6, 8);
+        const dateISO = (year && month && day) ? `${year}-${month}-${day}` : null;
+
+        return {
+          "@type": "Event",
+          "name": r["Holiday Name"] || "Public Holiday",
+          "startDate": dateISO || "",
+          "description": r.Information || "Australian public holiday",
+          "location": {
+            "@type": "Place",
+            "name": r.Jurisdiction ? r.Jurisdiction.toUpperCase() : "Australia"
+          },
+          "url": r["More Information"] || "https://data.gov.au/"
+        };
+      });
+
+      const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Australian Public Holidays",
+        "description": "A list of official Australian public holidays by year and jurisdiction.",
+        "itemListElement": events
+      };
+
+      document.getElementById("structuredData").textContent = JSON.stringify(structuredData, null, 2);
+    }
+
+    (async function init() {
+      const records = await fetchData();
+      populateFilters(records);
+      renderTable(records);
+    })();
+  </script>
+</body>
+</html>
