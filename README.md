@@ -1,6 +1,6 @@
 # 🇦🇺 Australian Public Holidays Viewer
 
-A simple project by **Yasith Lokuge** with Vibe Coding to display and explore **Australian public holidays** using the open dataset from [data.gov.au](https://data.gov.au/).
+A simple project to display and explore **Australian public holidays** using the open dataset from [data.gov.au](https://data.gov.au/).
 
 This repository contains:
 - A **standalone HTML page** (`index.html`) that fetches and displays the holidays in a browser.
@@ -103,13 +103,14 @@ See [LICENSE.md](LICENSE.md) for full license details.
 ---
 
 ## 🧠 Credits
-Created with 💡 and ☕ by **Yasith Lokuge with Vibe Coding**  
 Powered by open data from [data.gov.au](https://data.gov.au/)
 Inspired by [nextpoyawhen.com](https://nextpoyawhen.com)
+
 ---
 
 ## 📸 Screenshot
 ![Australian Public Holidays Screenshot](Screenshot.png)
+
 ---
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.md)
